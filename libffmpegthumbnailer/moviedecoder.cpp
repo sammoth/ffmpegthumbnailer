@@ -89,7 +89,7 @@ void MovieDecoder::initialize(const string& filename, bool preferEmbeddedMetadat
         throw logic_error("Could not find stream information");
     }
 
-    initializeVideo(preferEmbeddedMetadata);
+    initializeVideo(false);
     m_pFrame = av_frame_alloc();
 }
 
@@ -125,7 +125,7 @@ void MovieDecoder::destroy()
 
 bool MovieDecoder::embeddedMetaDataIsAvailable()
 {
-    return m_UseEmbeddedData;
+    return false;
 }
 
 string MovieDecoder::getCodec()
@@ -147,11 +147,9 @@ static bool isStillImageCodec(AVCodecID codecId)
 int32_t MovieDecoder::findPreferedVideoStream(bool preferEmbeddedMetadata)
 {
     std::vector<int32_t> videoStreams;
-    std::vector<int32_t> embeddedDataStream;
 
     for (unsigned int i = 0; i < m_pFormatContext->nb_streams; ++i)
     {
-        AVStream *stream = m_pFormatContext->streams[i];
         auto ctx = m_pFormatContext->streams[i]->codec;
         if (ctx->codec_type == AVMEDIA_TYPE_VIDEO)
         {
@@ -160,31 +158,11 @@ int32_t MovieDecoder::findPreferedVideoStream(bool preferEmbeddedMetadata)
                 videoStreams.push_back(i);
                 continue;
             }
-
-            if (stream->metadata)
-            {
-                AVDictionaryEntry* tag = nullptr;
-                while ((tag = av_dict_get(stream->metadata, "", tag, AV_DICT_IGNORE_SUFFIX)))
-                {
-                    if (strcmp(tag->key, "filename") == 0 && strncmp(tag->value, "cover.", 6) == 0)
-                    {
-                        embeddedDataStream.insert(embeddedDataStream.begin(), i);
-                        continue;
-                    }
-                }
-            }
-
-            embeddedDataStream.push_back(i);
         }
     }
 
     m_UseEmbeddedData = false;
-    if (preferEmbeddedMetadata && !embeddedDataStream.empty())
-    {
-        m_UseEmbeddedData = true;
-        return embeddedDataStream.front();
-    }
-    else if (!videoStreams.empty())
+    if (!videoStreams.empty())
     {
         return videoStreams.front();
     }
