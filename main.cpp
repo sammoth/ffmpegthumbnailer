@@ -76,9 +76,6 @@ int main(int argc, char** argv)
         case 's':
             thumbnailSize = optarg;
             break;
-        case 'f':
-            filmStripOverlay = true;
-            break;
         case 'p':
             smartFrameSelection = true;
             break;

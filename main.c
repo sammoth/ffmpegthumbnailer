@@ -35,7 +35,7 @@ int main(int argc, char** argv)
     image_data* imageData = video_thumbnailer_create_image_data();
 
     thumbnailer->seek_percentage        = 15;
-    thumbnailer->overlay_film_strip     = 1;
+    thumbnailer->overlay_film_strip     = 0;
     thumbnailer->thumbnail_size         = 256;
     thumbnailer->thumbnail_image_type   = Jpeg;
 
